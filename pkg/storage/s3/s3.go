@@ -1,8 +1,11 @@
 package s3
 
 import (
+	"io"
+
 	"github.com/minio/minio-go"
 	"github.com/pkg/errors"
+	"github.com/tritonmedia/twilight.go/pkg/storage"
 )
 
 // Client is a s3 client
@@ -29,7 +32,7 @@ func NewClient(accessKey, secretKey, endpoint, bucket string) (*Client, error) {
 		return nil, errors.Wrap(err, "failed to test s3 connection")
 	}
 
-	// TODO(jaredallard): feel hacky
+	// TODO(jaredallard): feels hacky
 	m.MakeBucket(bucket, "us-west-2")
 
 	return &Client{
@@ -45,4 +48,20 @@ func (c *Client) Exists(path string) bool {
 	}
 
 	return true
+}
+
+// Unlink removes an object from the bucket
+func (c *Client) Unlink(path string) error {
+	return c.m.RemoveObject(c.bucket, path)
+}
+
+// Create uploads an object to an s3 compatible storage
+func (c *Client) Create(r io.Reader, destPath string) error {
+	exists := c.Exists(destPath)
+	if exists {
+		return storage.ErrorIsExists
+	}
+
+	_, err := c.m.PutObject(c.bucket, destPath, r, -1, minio.PutObjectOptions{})
+	return err
 }
