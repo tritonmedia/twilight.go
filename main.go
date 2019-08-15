@@ -7,11 +7,13 @@ import (
 	"net/http"
 	"os"
 	"strconv"
+	"strings"
 
 	humanize "github.com/dustin/go-humanize"
 	log "github.com/sirupsen/logrus"
 	"github.com/tritonmedia/twilight.go/pkg/parser"
 	"github.com/tritonmedia/twilight.go/pkg/storage"
+	"github.com/tritonmedia/twilight.go/pkg/storage/fs"
 	"github.com/tritonmedia/twilight.go/pkg/storage/s3"
 )
 
@@ -155,16 +157,33 @@ func main() {
 		log.SetReportCaller(true)
 	}
 
-	log.Infof("creating storage client ...")
-	// TODO(jaredallard): add support for other clients
-	s, err := s3.NewProvider(
-		os.Getenv("TWILIGHT_S3_ACCESS_KEY"),
-		os.Getenv("TWILIGHT_S3_SECRET_KEY"),
-		os.Getenv("TWILIGHT_S3_ENDPOINT"),
-		os.Getenv("TWILIGHT_S3_BUCKET"),
-	)
-	if err != nil {
-		log.Fatalf("failed to create s3 client: %v", err)
+	provider := strings.ToLower(os.Getenv("TWILIGHT_STORAGE_PROVIDER"))
+	if provider == "" { // default to the fs client
+		provider = "fs"
+	}
+
+	log.Infof("creating storage client (%s)...", provider)
+
+	var s storage.Provider
+	switch provider {
+	case "s3":
+		// TODO(jaredallard): add support for other clients
+		var err error
+		s, err = s3.NewProvider(
+			os.Getenv("TWILIGHT_S3_ACCESS_KEY"),
+			os.Getenv("TWILIGHT_S3_SECRET_KEY"),
+			os.Getenv("TWILIGHT_S3_ENDPOINT"),
+			os.Getenv("TWILIGHT_S3_BUCKET"),
+		)
+		if err != nil {
+			log.Fatalf("failed to create s3 client: %v", err)
+		}
+		break
+	case "fs":
+		s = fs.NewProvider(os.Getenv("TWILIGHT_FS_BASE"))
+		break
+	default:
+		log.Fatalf("invalid storage provider '%s'", provider)
 	}
 
 	port := ":3402"
