@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -9,6 +10,7 @@ import (
 
 	humanize "github.com/dustin/go-humanize"
 	log "github.com/sirupsen/logrus"
+	"github.com/tritonmedia/twilight.go/pkg/parser"
 	"github.com/tritonmedia/twilight.go/pkg/storage"
 	"github.com/tritonmedia/twilight.go/pkg/storage/s3"
 )
@@ -86,16 +88,48 @@ func reciever(s storage.Provider, w http.ResponseWriter, r *http.Request) {
 
 		log.Infof("uploading file ...")
 
-		err = s.Create(p, "Bunny.mkv")
+		mediaType := r.Header.Get("X-Media-Type")
+		if mediaType == "" {
+			log.Errorf("missing X-Media-Type")
+			sendError(w, http.StatusBadRequest, "missing X-Media-Type")
+			return
+		}
+
+		mediaName := r.Header.Get("X-Media-Name")
+		if mediaName == "" {
+			log.Errorf("missing X-Media-Name")
+			sendError(w, http.StatusBadRequest, "missing X-Media-Name")
+			return
+		}
+
+		newName := fmt.Sprintf("%s.mkv", mediaName)
+		if mediaType != "movie" {
+			m, err := parser.ParseFile(p.FileName())
+			if err != nil {
+				log.Errorf("failed to parse file: %v", err)
+				sendError(w, http.StatusInternalServerError, "failed to parse filename")
+				return
+			}
+
+			newName = fmt.Sprintf("%s - S%dE%d.mkv", mediaName, m.Season, m.Episode)
+		}
+
+		// TODO(jaredallard): better key calculation
+		key := fmt.Sprintf("%s/%s/%s", mediaType, mediaName, newName)
+
+		log.Infof("uploading file to '%s'", key)
+
+		err = s.Create(p, key)
 		if err == storage.ErrorIsExists {
 			sendError(w, http.StatusConflict, "file already exists")
+			return
 		} else if err != nil {
 			log.Errorf("failed to write file to storage provider: %v", err)
 			sendError(w, http.StatusInternalServerError, "failed to stream to storageprovider")
 			return
 		}
 
-		// asssuming done, so break out=
+		// asssuming done, so break out
 		log.Infof("uploaded file to remote")
 		break
 	}
@@ -115,6 +149,12 @@ func reciever(s storage.Provider, w http.ResponseWriter, r *http.Request) {
 }
 
 func main() {
+	log.SetFormatter(&log.JSONFormatter{})
+
+	if os.Getenv("TWILIGHT_DEBUG") != "" {
+		log.SetReportCaller(true)
+	}
+
 	log.Infof("creating storage client ...")
 	// TODO(jaredallard): add support for other clients
 	s, err := s3.NewClient(

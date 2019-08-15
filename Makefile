@@ -28,3 +28,7 @@ build:
 gofmt:
 	@echo " ===> Running go fmt <==="
 	gofmt -w ./
+
+.PHONY: test
+test:
+	go test $(PKGDIR)/...
