@@ -30,16 +30,16 @@ var (
 )
 
 // romanToInt converts a roman numeral to an integer
-func romanToInt(numeral string) (int, error) {
+func romanToInt(numerals string) (int, error) {
 	// use runes in case we get non ASCII input
-	runes := []rune(strings.ToUpper(numeral))
+	runes := []rune(strings.ToUpper(numerals))
 	strLen := len(runes)
 
 	num := 0
 	lastValue := 0
 	for i := 0; i != strLen; i++ {
 		// get the rune
-		r := rune(numeral[i])
+		r := rune(numerals[i])
 
 		v := romanNumerals[r]
 		if v == 0 { // skip unknowns
