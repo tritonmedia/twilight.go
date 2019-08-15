@@ -157,7 +157,7 @@ func main() {
 
 	log.Infof("creating storage client ...")
 	// TODO(jaredallard): add support for other clients
-	s, err := s3.NewClient(
+	s, err := s3.NewProvider(
 		os.Getenv("TWILIGHT_S3_ACCESS_KEY"),
 		os.Getenv("TWILIGHT_S3_SECRET_KEY"),
 		os.Getenv("TWILIGHT_S3_ENDPOINT"),

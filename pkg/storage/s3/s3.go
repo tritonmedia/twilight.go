@@ -8,14 +8,14 @@ import (
 	"github.com/tritonmedia/twilight.go/pkg/storage"
 )
 
-// Client is a s3 client
-type Client struct {
+// Provider is a s3 comptaible client storage provider
+type Provider struct {
 	m      *minio.Client
 	bucket string
 }
 
-// NewClient retruns a new S3 client
-func NewClient(accessKey, secretKey, endpoint, bucket string) (*Client, error) {
+// NewProvider returns an s3 comptaible client storage provider
+func NewProvider(accessKey, secretKey, endpoint, bucket string) (*Provider, error) {
 	m, err := minio.New(
 		endpoint,
 		accessKey,
@@ -35,15 +35,15 @@ func NewClient(accessKey, secretKey, endpoint, bucket string) (*Client, error) {
 	// TODO(jaredallard): feels hacky
 	m.MakeBucket(bucket, "us-west-2")
 
-	return &Client{
+	return &Provider{
 		m:      m,
 		bucket: bucket,
 	}, nil
 }
 
 // Exists checks if a key exists
-func (c *Client) Exists(path string) bool {
-	if _, err := c.m.StatObject(c.bucket, path, minio.StatObjectOptions{}); err != nil {
+func (p *Provider) Exists(path string) bool {
+	if _, err := p.m.StatObject(p.bucket, path, minio.StatObjectOptions{}); err != nil {
 		return false
 	}
 
@@ -51,17 +51,16 @@ func (c *Client) Exists(path string) bool {
 }
 
 // Unlink removes an object from the bucket
-func (c *Client) Unlink(path string) error {
-	return c.m.RemoveObject(c.bucket, path)
+func (p *Provider) Unlink(path string) error {
+	return p.m.RemoveObject(p.bucket, path)
 }
 
 // Create uploads an object to an s3 compatible storage
-func (c *Client) Create(r io.Reader, destPath string) error {
-	exists := c.Exists(destPath)
-	if exists {
+func (p *Provider) Create(r io.Reader, destPath string) error {
+	if p.Exists(destPath) {
 		return storage.ErrorIsExists
 	}
 
-	_, err := c.m.PutObject(c.bucket, destPath, r, -1, minio.PutObjectOptions{})
+	_, err := p.m.PutObject(p.bucket, destPath, r, -1, minio.PutObjectOptions{})
 	return err
 }
