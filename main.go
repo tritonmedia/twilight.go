@@ -8,9 +8,13 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
 	humanize "github.com/dustin/go-humanize"
+	"github.com/golang/protobuf/proto"
 	log "github.com/sirupsen/logrus"
+	"github.com/tritonmedia/identifier/pkg/rabbitmq"
+	api "github.com/tritonmedia/tritonmedia.go/pkg/proto"
 	"github.com/tritonmedia/twilight.go/pkg/parser"
 	"github.com/tritonmedia/twilight.go/pkg/storage"
 	"github.com/tritonmedia/twilight.go/pkg/storage/fs"
@@ -45,7 +49,7 @@ func sendError(w http.ResponseWriter, statusCode int, msg string) {
 	w.Write(b)
 }
 
-func reciever(s storage.Provider, w http.ResponseWriter, r *http.Request) {
+func reciever(s storage.Provider, rabbit *rabbitmq.Client, w http.ResponseWriter, r *http.Request) {
 	// all requests use json anywa
 	w.Header().Set("Content-Type", "application/json")
 
@@ -104,9 +108,35 @@ func reciever(s storage.Provider, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
+		mediaID := r.Header.Get("X-Media-ID")
+		if mediaName == "" {
+			log.Errorf("missing X-Media-ID")
+			sendError(w, http.StatusBadRequest, "missing X-Media-ID")
+			return
+		}
+
+		mediaQuality := r.Header.Get("X-Media-Quality")
+		if mediaQuality == "" {
+			log.Errorf("missing X-Media-Quality")
+			sendError(w, http.StatusBadRequest, "missing X-Media-Quality")
+			return
+		}
+
+		var itypeID int32
+		var ok bool
+		if itypeID, ok = api.Media_MediaType_value[strings.ToUpper(mediaType)]; !ok {
+			sendError(w, http.StatusBadRequest, "invalid media type")
+			return
+		}
+
+		typeID := api.Media_MediaType(itypeID)
+
 		newName := fmt.Sprintf("%s.mkv", mediaName)
+
+		// if movie, OK to leave m empty because we do type detection on the other end
+		m := parser.Metadata{}
 		if mediaType != "movie" {
-			m, err := parser.ParseFile(p.FileName())
+			m, err = parser.ParseFile(p.FileName())
 			if err != nil {
 				log.Errorf("failed to parse file: %v", err)
 				sendError(w, http.StatusInternalServerError, "failed to parse filename")
@@ -116,8 +146,7 @@ func reciever(s storage.Provider, w http.ResponseWriter, r *http.Request) {
 			newName = fmt.Sprintf("%s - S%dE%d.mkv", mediaName, m.Season, m.Episode)
 		}
 
-		// TODO(jaredallard): better key calculation
-		key := fmt.Sprintf("%s/%s/%s", mediaType, mediaName, newName)
+		key := fmt.Sprintf("%s/%s/%s", strings.ToLower(typeID.String()), mediaName, newName)
 
 		log.Infof("uploading file to '%s'", key)
 
@@ -131,8 +160,29 @@ func reciever(s storage.Provider, w http.ResponseWriter, r *http.Request) {
 			return
 		}
 
-		// asssuming done, so break out
 		log.Infof("uploaded file to remote")
+
+		log.Infof("creating v1.identify.newfile message")
+		i := api.IdentifyNewFile{
+			CreatedAt: time.Now().Format(time.RFC3339),
+			Quality:   mediaQuality,
+			Key:       key,
+			Episode:   int64(m.Episode),
+			Season:    int64(m.Season),
+			Media: &api.Media{
+				Id:   mediaID,
+				Type: typeID,
+			},
+		}
+
+		b, err := proto.Marshal(&i)
+		if err != nil {
+			panic(err)
+		}
+		if err := rabbit.Publish("v1.identify.newfile", b); err != nil {
+			log.Errorf("failed to create message: %v", err)
+			sendError(w, http.StatusInternalServerError, "failed to publish message")
+		}
 		break
 	}
 
@@ -186,13 +236,18 @@ func main() {
 		log.Fatalf("invalid storage provider '%s'", provider)
 	}
 
+	client, err := rabbitmq.NewClient("amqp://user:bitnami@127.0.0.1:5672")
+	if err != nil {
+		log.Fatalf("failed to connect to rabbitmq: %v", err)
+	}
+
 	port := ":3402"
 	if os.Getenv("PORT") != "" {
 		port = ":" + os.Getenv("PORT")
 	}
 
 	http.HandleFunc("/v1/media", func(w http.ResponseWriter, r *http.Request) {
-		reciever(s, w, r)
+		reciever(s, client, w, r)
 	})
 
 	log.Infof("listening on port %s", port)
