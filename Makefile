@@ -6,6 +6,7 @@ GOFLAGS    :=
 TAGS       := 
 BINDIR     := $(CURDIR)/bin
 PKGDIR     := github.com/tritonmedia/twilight.go
+CGO_ENABLED := 1
 
 # Required for globs to work correctly
 SHELL=/bin/bash
@@ -22,7 +23,7 @@ dep:
 .PHONY: build
 build:
 	@echo " ===> building releases in ./bin/... <=== "
-	GO11MODULE=enabled CGO_ENABLED=1 $(GO) build -o $(BINDIR)/twilight -v $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' .
+	GO11MODULE=enabled CGO_ENABLED=$(CGO_ENABLED) $(GO) build -o $(BINDIR)/twilight -v $(GOFLAGS) -tags '$(TAGS)' -ldflags '$(LDFLAGS)' .
 
 .PHONY: gofmt
 gofmt:
