@@ -2,6 +2,7 @@ package s3
 
 import (
 	"io"
+	"net/url"
 
 	"github.com/minio/minio-go"
 	"github.com/pkg/errors"
@@ -16,13 +17,21 @@ type Provider struct {
 
 // NewProvider returns an s3 comptaible client storage provider
 func NewProvider(accessKey, secretKey, endpoint, bucket string) (*Provider, error) {
+	var ssl bool
+	u, err := url.Parse(endpoint)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to parse minio endpoint")
+	}
+
+	if u.Scheme == "https" {
+		ssl = true
+	}
+
 	m, err := minio.New(
-		endpoint,
+		u.Host,
 		accessKey,
 		secretKey,
-
-		// TODO(jaredallard): calculate from endpoint
-		false,
+		ssl,
 	)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to wrap minio")
