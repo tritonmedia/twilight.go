@@ -10,11 +10,22 @@
 
 ## Role
 
-Coming soon ...
+Twilight determines the name of your media and where it gets stored. This
+information is then passed to [identifier](https://github.com/tritonmedia/identifier)
+to be exposed to the various api clients.
 
 ## Configuration
 
-Coming soon...
+| EnvVar                    | Description                | Conditions             |
+|---------------------------|----------------------------|------------------------|
+| TWILIGHT_STORAGE_PROVIDER | Storage Provider to use    | Must be `s3/fs`        |
+| TWILIGHT_S3_ACCESS_KEY    | S3 Access Key              | Only works in S3 mode  |
+| TWILIGHT_S3_SECRET_KEY    | S3 Secret Key              | Only works in S3 mode  |
+| TWILIGHT_S3_ENDPOINT      | S3 Endpoint                | Only works in S3 mode. |
+| TWILIGHT_S3_BUCKET        | S3 Bucket                  | Only works in S3 mode  |
+| TWILIGHT_FS_BASE          | Base dir for FS storage    | Only works in FS mode  |
+| TWILIGHT_DEBUG            | Enable debug logging       | Set to != "" to enable |
+| PORT                      | Port to run HTTP server on | Must be an integer     |
 
 ## License
 
