@@ -236,7 +236,13 @@ func main() {
 		log.Fatalf("invalid storage provider '%s'", provider)
 	}
 
-	client, err := rabbitmq.NewClient("amqp://user:bitnami@127.0.0.1:5672")
+	amqpEndpoint := os.Getenv("TWILIGHT_RABBITMQ_ENDPOINT")
+	if amqpEndpoint == "" {
+		amqpEndpoint = "amqp://user:bitnami@127.0.0.1:5672"
+		log.Warnf("TWILIGHT_RABBITMQ_ENDPOINT not defined, defaulting to local config: %s", amqpEndpoint)
+	}
+
+	client, err := rabbitmq.NewClient(amqpEndpoint)
 	if err != nil {
 		log.Fatalf("failed to connect to rabbitmq: %v", err)
 	}
