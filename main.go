@@ -122,11 +122,13 @@ func reciever(s storage.Provider, rabbit *rabbitmq.Client, w http.ResponseWriter
 			return
 		}
 
-		var itypeID int32
-		var ok bool
-		if itypeID, ok = api.Media_MediaType_value[strings.ToUpper(mediaType)]; !ok {
-			sendError(w, http.StatusBadRequest, "invalid media type")
-			return
+		var itypeID int
+		if itypeID, err = strconv.Atoi(mediaType); err != nil { // try to parse as an integer first
+			if _, ok := api.Media_MediaType_value[strings.ToUpper(mediaType)]; !ok {
+				itypeID = int(api.Media_MediaType_value[strings.ToUpper(mediaType)])
+				sendError(w, http.StatusBadRequest, "invalid media type")
+				return
+			}
 		}
 
 		typeID := api.Media_MediaType(itypeID)
