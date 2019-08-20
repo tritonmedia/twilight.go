@@ -56,7 +56,7 @@ func reciever(s storage.Provider, rabbit *rabbitmq.Client, w http.ResponseWriter
 	// old endpoint
 	if r.Method == "POST" {
 		w.WriteHeader(http.StatusOK)
-		w.Write([]byte(`{"message":"unsupported enpoint, please use just PUT /v1/media"}`))
+		w.Write([]byte(`{"message":"unsupported endpoint, please use just PUT /v1/media"}`))
 		return
 	}
 
@@ -132,12 +132,11 @@ func reciever(s storage.Provider, rabbit *rabbitmq.Client, w http.ResponseWriter
 		}
 
 		typeID := api.Media_MediaType(itypeID)
-
 		newName := fmt.Sprintf("%s.mkv", mediaName)
 
 		// if movie, OK to leave m empty because we do type detection on the other end
 		m := parser.Metadata{}
-		if mediaType != "movie" {
+		if typeID != api.Media_MOVIE {
 			m, err = parser.ParseFile(p.FileName())
 			if err != nil {
 				log.Errorf("failed to parse file: %v", err)
