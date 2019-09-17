@@ -218,13 +218,12 @@ func main() {
 	var s storage.Provider
 	switch provider {
 	case "s3":
-		// TODO(jaredallard): add support for other clients
 		var err error
 		s, err = s3.NewProvider(
-			os.Getenv("TWILIGHT_S3_ACCESS_KEY"),
-			os.Getenv("TWILIGHT_S3_SECRET_KEY"),
-			os.Getenv("TWILIGHT_S3_ENDPOINT"),
-			os.Getenv("TWILIGHT_S3_BUCKET"),
+			os.Getenv("S3_ACCESS_KEY"),
+			os.Getenv("S3_SECRET_KEY"),
+			os.Getenv("S3_ENDPOINT"),
+			os.Getenv("S3_BUCKET"),
 		)
 		if err != nil {
 			log.Fatalf("failed to create s3 client: %v", err)
@@ -237,10 +236,10 @@ func main() {
 		log.Fatalf("invalid storage provider '%s'", provider)
 	}
 
-	amqpEndpoint := os.Getenv("TWILIGHT_RABBITMQ_ENDPOINT")
+	amqpEndpoint := os.Getenv("RABBITMQ")
 	if amqpEndpoint == "" {
 		amqpEndpoint = "amqp://user:bitnami@127.0.0.1:5672"
-		log.Warnf("TWILIGHT_RABBITMQ_ENDPOINT not defined, defaulting to local config: %s", amqpEndpoint)
+		log.Warnf("RABBITMQ not defined, defaulting to local config: %s", amqpEndpoint)
 	}
 
 	log.Infoln("connecting to rabbitmq ...")
