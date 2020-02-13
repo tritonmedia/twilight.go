@@ -12,7 +12,7 @@ jobs:
         name: Build Docker Image
     - run:
         command: echo "$DOCKER_PASSWORD" | docker login --username "${DOCKER_USERNAME}"
-          && docker push jaredallard/triton-twilight-go
+          --password-stdin && docker push jaredallard/triton-twilight-go
         name: Publish Docker Image
 version: 2
 workflows:
