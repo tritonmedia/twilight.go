@@ -1,27 +1,23 @@
-version: 2
 jobs:
   build:
     docker:
-      - image: docker:19.03.5
+    - image: docker:19.03.5
     steps:
-      # Needed for local testing
-      - run: apk add --no-cache git
-      - checkout
-      - setup_remote_docker:
-          version: '18.09.3'
-      - run:
-          name: Build Docker Image
-          command: DOCKER_BUILDKIT=1 docker build -t jaredallard/triton-twilight-go -f Dockerfile .
-      - run:
-          name: Publish Docker Image
-          command: |
-            set -e
-            docker login --username "${DOCKER_USERNAME}" --password-stdin <<< "${DOCKER_PASSWORD}"
-            docker push jaredallard/triton-twilight-go
-
+    - checkout
+    - setup_remote_docker:
+        version: 18.09.3
+    - run:
+        command: DOCKER_BUILDKIT=1 docker build -t jaredallard/triton-twilight-go
+          -f Dockerfile .
+        name: Build Docker Image
+    - run:
+        command: echo "$DOCKER_PASSWORD" | docker login --username "${DOCKER_USERNAME}"
+          && docker push jaredallard/triton-twilight-go
+        name: Publish Docker Image
+version: 2
 workflows:
-  version: 2
   build-push:
     jobs:
-      - build:
-          context: Docker
+    - build:
+        context: Docker
+  version: 2
