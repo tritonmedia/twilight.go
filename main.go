@@ -163,26 +163,29 @@ func reciever(s storage.Provider, rabbit *rabbitmq.Client, w http.ResponseWriter
 
 		log.Infof("uploaded file to remote")
 
-		log.Infof("creating v1.identify.newfile message")
-		i := api.IdentifyNewFile{
-			CreatedAt: time.Now().Format(time.RFC3339),
-			Quality:   mediaQuality,
-			Key:       key,
-			Episode:   int64(m.Episode),
-			Season:    int64(m.Season),
-			Media: &api.Media{
-				Id:   mediaID,
-				Type: typeID,
-			},
-		}
+		identifierEnabled := os.Getenv("NO_IDENTIFIER")
+		if identifierEnabled == "true" || identifierEnabled == "1" {
+			log.Infof("creating v1.identify.newfile message")
+			i := api.IdentifyNewFile{
+				CreatedAt: time.Now().Format(time.RFC3339),
+				Quality:   mediaQuality,
+				Key:       key,
+				Episode:   int64(m.Episode),
+				Season:    int64(m.Season),
+				Media: &api.Media{
+					Id:   mediaID,
+					Type: typeID,
+				},
+			}
 
-		b, err := proto.Marshal(&i)
-		if err != nil {
-			panic(err)
-		}
-		if err := rabbit.Publish("v1.identify.newfile", b); err != nil {
-			log.Errorf("failed to create message: %v", err)
-			sendError(w, http.StatusInternalServerError, "failed to publish message")
+			b, err := proto.Marshal(&i)
+			if err != nil {
+				panic(err)
+			}
+			if err := rabbit.Publish("v1.identify.newfile", b); err != nil {
+				log.Errorf("failed to create message: %v", err)
+				sendError(w, http.StatusInternalServerError, "failed to publish message")
+			}
 		}
 		break
 	}
