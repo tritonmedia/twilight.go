@@ -1,3 +1,3 @@
 local circle = import 'circle.libsonnet';
 
-circle.ServiceConfig('triton-twilight-go')
+circle.ServiceConfig('twilight')
