@@ -14,10 +14,31 @@ jobs:
         command: echo "$DOCKER_PASSWORD" | docker login --username "${DOCKER_USERNAME}"
           --password-stdin && docker push tritonmedia/twilight
         name: Publish "tritonmedia/twilight" Docker Image
+  tests:
+    docker:
+    - image: circleci/golang:1.13
+    steps:
+    - checkout
+    - restore_cache:
+        key: go-deps-{{ checksum "go.sum" }}
+    - run:
+        command: go mod vendor
+        name: Fetch Dependencies
+    - save_cache:
+        key: go-deps-{{ checksum "go.sum" }}
+        paths:
+        - vendor
+    - run:
+        command: make test
+        name: Run Tests
 version: 2
 workflows:
   build-push:
     jobs:
+    - tests:
+        context: Docker
     - build:
         context: Docker
+        requires:
+        - tests
   version: 2
