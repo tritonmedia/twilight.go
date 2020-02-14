@@ -3,12 +3,16 @@ package parser
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
+
+	"regexp"
 )
 
-var matcher *regexp.Regexp
+var (
+	matcher    *regexp.Regexp
+	intRemover *regexp.Regexp
+)
 
 var (
 	romanNumerals = map[rune]int{
@@ -54,8 +58,6 @@ func romanToInt(numerals string) (int, error) {
 
 		num += v
 
-		fmt.Printf("num is %d\n", num)
-
 		lastValue = v
 	}
 
@@ -73,6 +75,9 @@ type Metadata struct {
 
 // ParseFile returns detected metadata from a file name
 func ParseFile(name string) (Metadata, error) {
+	// strip integers that are in filenames
+	name = intRemover.ReplaceAllString(name, "")
+
 	matches := matcher.FindStringSubmatch(name)
 	if len(matches) == 0 {
 		return Metadata{}, fmt.Errorf("failed to find a match")
@@ -109,5 +114,6 @@ func ParseFile(name string) (Metadata, error) {
 }
 
 func init() {
+	intRemover = regexp.MustCompile(`^\d+[-]`)
 	matcher = regexp.MustCompile(`(\d+|[iI]+)?(?: -)?(?:[eE _x[]|^)(\d+)[^x]`)
 }

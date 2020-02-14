@@ -101,6 +101,13 @@ func TestParseFile(t *testing.T) {
 				Season:  1,
 			},
 		},
+		parseFileTestStruct{
+			name: "my-name-30-has-a-number-because-im-special 2.mkv",
+			Metadata: Metadata{
+				Episode: 2,
+				Season:  1,
+			},
+		},
 	}
 
 	for _, test := range tests {
