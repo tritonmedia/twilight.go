@@ -30,7 +30,7 @@ jobs:
     - save_cache:
         key: go-deps-{{ checksum "go.sum" }}
         paths:
-        - vendor
+        - /go/pkg/mod
 version: 2
 workflows:
   build-push:
