@@ -6,8 +6,9 @@ circle.ServiceConfig('twilight') {
       steps_+:: [
         circle.RestoreCacheStep('go-deps-{{ checksum "go.sum" }}'),
         circle.RunStep('Fetch Dependencies', 'go mod vendor'),
+        circle.RunStep('Run Tests', 'make test'),
+        // put save_cache step here thanks to make test downloading deps...
         circle.SaveCacheStep('go-deps-{{ checksum "go.sum" }}', ['vendor']),
-        circle.RunStep('Run Tests', 'make test')
       ],
     },
   },

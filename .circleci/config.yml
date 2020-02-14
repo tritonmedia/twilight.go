@@ -24,13 +24,13 @@ jobs:
     - run:
         command: go mod vendor
         name: Fetch Dependencies
+    - run:
+        command: make test
+        name: Run Tests
     - save_cache:
         key: go-deps-{{ checksum "go.sum" }}
         paths:
         - vendor
-    - run:
-        command: make test
-        name: Run Tests
 version: 2
 workflows:
   build-push:
