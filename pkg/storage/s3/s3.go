@@ -4,7 +4,7 @@ import (
 	"io"
 	"net/url"
 
-	"github.com/minio/minio-go"
+	"github.com/minio/minio-go/v6"
 	"github.com/pkg/errors"
 	"github.com/tritonmedia/twilight.go/pkg/storage"
 )
