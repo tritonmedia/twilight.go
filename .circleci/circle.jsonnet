@@ -18,6 +18,9 @@ circle.ServiceConfig('twilight') {
         'tests', 
         {
           name:: 'build',
+          branches: {
+            only: ['master']
+          },
           requires: ['tests'],
         }
       ],

@@ -1,7 +1,7 @@
 jobs:
   build:
     docker:
-    - image: docker:19.03.5
+    - image: docker:19.03.6
     steps:
     - checkout
     - setup_remote_docker:
@@ -38,6 +38,9 @@ workflows:
     - tests:
         context: Docker
     - build:
+        branches:
+          only:
+          - master
         context: Docker
         requires:
         - tests
