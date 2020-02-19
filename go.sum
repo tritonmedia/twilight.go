@@ -153,6 +153,7 @@ github.com/stretchr/testify v1.3.0 h1:TivCn/peBQ7UY8ooIcPgZFpTNSz0Q2U6UrFlUfqbe0
 github.com/stretchr/testify v1.3.0/go.mod h1:M5WIy9Dh21IEIfnGCwXGc5bZfKNJtfHm1UVUgZn+9EI=
 github.com/stretchr/testify v1.4.0 h1:2E4SXV/wtOkTonXsotYi4li6zVWxYlZuYNCXe9XRJyk=
 github.com/stretchr/testify v1.4.0/go.mod h1:j7eGeouHqKxXV5pUuKE4zz7dFj8WfuZ+81PSLYec5m4=
+github.com/stretchr/testify v1.5.1/go.mod h1:5W2xD1RspED5o8YsWQXVCued0rvSQ+mT+I5cxcmMvtA=
 github.com/tritonmedia/identifier v0.0.0-20200216055052-cee76aada338 h1:tuMeNJgkJKzMgbLP99r3LuahH53pY50APlaTHKUEPVg=
 github.com/tritonmedia/identifier v0.0.0-20200216055052-cee76aada338/go.mod h1:C6wCrcuCurrMmi3anW4+4PvNaepEX/+wq0NAyS2NkC0=
 github.com/tritonmedia/identifier v0.0.0-20200216170540-78236f5fe35e h1:hEJAj7sbuwHI/M+cL6e2t9lFdwgaVgNbVy0iNNWDusA=
