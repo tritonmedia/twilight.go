@@ -10,6 +10,6 @@ ENTRYPOINT ["/usr/bin/twilight"]
 RUN go mod vendor
 RUN make CGO_ENABLED=0
 
-FROM alpine:3.11
+FROM alpine:3.13
 RUN apk add --no-cache ca-certificates
 COPY --from=builder /src/app/bin/twilight /usr/bin/twilight
