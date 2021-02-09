@@ -9,6 +9,6 @@ require (
 	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.5.0
 	github.com/stretchr/testify v1.5.1
-	github.com/tritonmedia/identifier v0.0.0-20200216170540-78236f5fe35e
+	github.com/tritonmedia/identifier v0.0.0-20200609163149-46d964f8b7fc
 	github.com/tritonmedia/tritonmedia.go v1.0.3-0.20190912233825-4610fe4ce16e
 )
