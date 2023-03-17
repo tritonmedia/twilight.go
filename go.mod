@@ -3,7 +3,7 @@ module github.com/tritonmedia/twilight.go
 go 1.12
 
 require (
-	github.com/dustin/go-humanize v1.0.0
+	github.com/dustin/go-humanize v1.0.1
 	github.com/golang/protobuf v1.4.0
 	github.com/minio/minio-go/v6 v6.0.49
 	github.com/pkg/errors v0.9.1
